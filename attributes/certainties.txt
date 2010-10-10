@@ -1,0 +1,3 @@
+0 Probably
+1 Definitely
+2 Guessing
