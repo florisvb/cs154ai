@@ -6,14 +6,19 @@ def load(filename):
     fname = (filename)
     fd = open( fname, mode='r')
     print 'loading data... '
-    dataset = pickle.load(fd)
-    return dataset
+    database = pickle.load(fd)
+    return database
     
-def save(dataset, filename):
+def load_raw(filename):
+    database = Database()
+    database.load_data(filename)
+    return database
+    
+def save(database, filename):
     print 'saving data to file: ', filename
     fname = (filename)  
     fd = open( fname, mode='w' )
-    pickle.dump(dataset, fd)
+    pickle.dump(database, fd)
     return 1
 
 #########################################################################################
@@ -21,14 +26,23 @@ def save(dataset, filename):
 class Bird:
     def __init__(self, species):
         self.species = species
-        self.attribute_ids = []
-        self.attribute_bool = []
-        self.attribute_certainty = []
-        self.worker_id = []
-        
+        self.permissible = True
         # numpy array: there are 288 attributes
-        self.attributes = np.zeros([288, 1])
-
+        n_attributes = 288
+        self.attributes = [0 for i in range(n_attributes)]
+        self.attributes_binary = [0 for i in range(n_attributes)]
+        
+    def has_attribute(self, attribute, method='binary'):
+        answer = None
+        
+        if method == 'binary':
+            if self.attributes_binary[attribute] == 0:
+                answer = False
+            else:
+                answer = True
+                
+        return answer
+        
 #########################################################################################        
         
 class Database:
@@ -50,7 +64,7 @@ class Database:
         for line in infile.readlines():
             line_number += 1
             percent_read = float(line_number) / 8878904.
-            print 'reading line: ', line_number, ' = ', percent_read, '%'
+            print 'reading line: ', line_number, ' = ', percent_read*100, '%'
             
             entry = map(int, line.split())
             self.raw_data.append(entry)
@@ -58,20 +72,22 @@ class Database:
             # <image_id> <attribute_id> <is_present> <certainty_id> <worker_id>
             
             species = self.img_ids[str(entry[0])]
-            
             if species not in self.birds:
                 self.birds.setdefault(species, Bird(species))
                 
-            self.birds[species].attribute_ids.append(entry[1])
-            self.birds[species].attribute_bool.append(entry[2])
-            self.birds[species].attribute_certainty.append(entry[3])
-            self.birds[species].worker_id.append(entry[4])
+            # save all the data into an array of attributes:
+            attribute = entry[1]
+            new_attribute_data = np.array([ entry[2], entry[3], entry[4] ])
+            try:
+                attribute_array = self.birds[species].attributes[attribute]
+                attribute_array = np.hstack( (attribute_data, new_attribute_data) )
+            except:
+                attribute_array = new_attribute_data
+            self.birds[species].attributes[attribute] = attribute_array
             
-            # for the first round... use this.. assumes no noise in answers, and thus no need to track MTurk user numbers or certainty:
+            # binary attribute array: for non-noisy database:
             if entry[3] is 1:
-                attribute = entry[1]
-                self.birds[species].attributes[attribute] = entry[2]
-            
+                self.birds[species].attributes_binary[attribute] = entry[2]
             
     def load_image_ids(self, filename):
         self.raw_img_ids = []
@@ -107,7 +123,7 @@ class Database:
             attribute = (attribute_name, attribute_value)
             self.attribute_ids.setdefault(attribute_number, attribute)
             
-            
+    
             
             
             
