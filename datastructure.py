@@ -50,7 +50,7 @@ class Database:
     def __init__(self):
         print 'initializing'
         
-        # database of bird species:
+        # dictionary of bird species:
         self.birds = {}
         
         # look up image_id to get species name:
@@ -58,7 +58,7 @@ class Database:
         
     def load_data(self, filename):
         print 'loading data... this may take some time'
-        self.raw_data = []
+        raw_data = []
         infile = open(filename,"r")
         line_number = 0
         
@@ -68,7 +68,7 @@ class Database:
             print 'reading line: ', line_number, ' = ', percent_read*100, '%'
             
             entry = map(int, line.split())
-            self.raw_data.append(entry)
+            raw_data.append(entry)
             # rawdata: 
             # <image_id> <attribute_id> <is_present> <certainty_id> <worker_id>
             
@@ -91,7 +91,6 @@ class Database:
                 self.birds[species].attributes_binary[attribute] = entry[2]
             
     def load_image_ids(self, filename):
-        self.raw_img_ids = []
         self.img_ids = {}
         infile = open(filename,"r")
         for line in infile.readlines():
@@ -111,7 +110,6 @@ class Database:
             self.img_ids.setdefault(partitioned[0], img_filename)
             
     def load_attribute_ids(self, filename):
-        self.raw_attribute_ids = []
         self.attribute_ids = {}
         infile = open(filename,"r")
         for line in infile.readlines():

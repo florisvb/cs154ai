@@ -9,15 +9,16 @@ or just change the if statements to the appropriate value
 ############################################################################################################
 
 # you may need to change this if your path is set up differently
-FILENAME = 'attributes/labels.txt' 
+FILENAME = 'attributes/labels.txt'
+FILENAME_PICKLE = 'database' 
 
 # this is to load the raw data... this takes a very long time
-if 1:
+if 0:
     database = datastructure.load_raw(FILENAME)
     
-# this is to load a pickled database... this takes a long time too
-if 0:
-    database = datastructure.load(FILENAME)
+# this is to load a pickled database... this is much faster
+if 1:
+    database = datastructure.load(FILENAME_PICKLE)
     
 
 # some examples of how to use the database:
