@@ -1,4 +1,4 @@
-import pickle
+import cPickle as pickle
 import numpy as np
 
 
@@ -27,6 +27,7 @@ class Bird:
     def __init__(self, species):
         self.species = species
         self.permissible = True
+        
         # numpy array: there are 288 attributes
         n_attributes = 288
         self.attributes = [0 for i in range(n_attributes)]

@@ -1,18 +1,5 @@
-in an interactive python environment, like ipython, use the datastructure like so:
+Note: raw data comes from here: http://www.vision.caltech.edu/visipedia-data/CUB-200/
 
-import datastructure
+This is a 'simple' and fast way of organizing all the data using classes and dictionaries. It's very fast to search through once it's all set up. 
 
-# for raw data: (this takes a while)
-data.load_data(FILENAME)
-data = datastructure.Database()
-
-# for a pickled file: (ie. someone has already run the database and provided a pickle file):
-data = datastructure.load(FILENAME.PICKLE)
-
-# acccessing the data:
-for k, v in data.birds.items():
-    # k is the species name
-    # to access the attributes:
-    data.birds[k].attributes
-    # the attributes are in a matrix form, where 0: false, 1: true
-    # the attribute index number corresponds to the attribute in the attributes.txt file
+See examples.py for usage
