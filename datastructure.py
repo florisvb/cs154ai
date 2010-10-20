@@ -58,12 +58,12 @@ class Database:
         self.bird_names = {}
         
         # look up image_id to get species name:
-        self.load_image_ids('attributes/specie_names.txt') 
+        self.load_image_ids('milestone1/specie_names.txt') 
         
         # look up attribute id number and text pair
-        self.load_attribute_ids('attributes/attributes.txt')
+        self.load_attribute_ids('milestone1/attributes.txt')
         
-    def load_data(self, filename='attributes/dataset.txt'):
+    def load_data(self, filename='milestone1/dataset.txt'):
         print 'loading data... this may take some time'
         raw_data = []
         infile = open(filename,"r")

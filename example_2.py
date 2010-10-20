@@ -9,7 +9,7 @@ or just change the if statements to the appropriate value
 ############################################################################################################
 
 # you may need to change this if your path is set up differently
-FILENAME = 'attributes/labels.txt'
+FILENAME = 'milestone1/dataset.txt'
 FILENAME_PICKLE = 'database' 
 
 # this is to load the raw data... this takes a somewhat long time
