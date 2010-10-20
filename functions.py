@@ -29,3 +29,25 @@ def count_permissible_birds(database):
         if database.birds[k].permissible is True:
             n += 1
     return n
+    
+def generate_attribute_matrix(database, dtype='numpy'):
+    # create a mxn matrix where m is the bird species, and n is the attribute true/false array
+    num_attributes = database.num_attributes
+    num_species = database.num_species
+    mat = np.zeros([num_species, num_attributes], dtype=int)
+    for specie in range(num_species):
+        try: # try/except needed to deal with empty bird[0] case
+            mat[specie, :] = database.birds[specie].attributes_binary
+        except:
+            pass
+    if dtype == 'numpy':
+        return mat
+    elif dtype == 'list':
+        return mat.tolist()
+    
+    
+    
+    
+    
+    
+    
