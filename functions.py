@@ -30,7 +30,7 @@ def count_permissible_birds(database):
             n += 1
     return n
     
-def generate_attribute_matrix(database, dtype='numpy'):
+def generate_attribute_matrix(database, dtype='numpy', append_bird_ids=True, remove_empty_row=True):
     # create a mxn matrix where m is the bird species, and n is the attribute true/false array
     num_attributes = database.num_attributes
     num_species = database.num_species
@@ -40,6 +40,16 @@ def generate_attribute_matrix(database, dtype='numpy'):
             mat[specie, :] = database.birds[specie].attributes_binary
         except:
             pass
+            
+    if append_bird_ids:
+        bird_ids_arr = [i for i in range(num_species)]
+        bird_ids = np.array(bird_ids_arr).reshape(num_species, 1)
+        mat = np.hstack( (bird_ids, mat) )
+    
+    if remove_empty_row:
+        # remove first row: it does not correspond to a real bird
+        mat = np.delete(mat, np.s_[0], axis=0)
+                
     if dtype == 'numpy':
         return mat
     elif dtype == 'list':

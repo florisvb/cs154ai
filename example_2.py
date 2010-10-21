@@ -22,6 +22,7 @@ if 1:
     
 
 # generate a matrix where the rows are bird species and the columns are attributes:
+# first column is the species number (you can omit this with flag: append_bird_ids=False)
 
 # this is for a NUMPY array (see http://www.scipy.org/NumPy_for_Matlab_Users):
 if 1:
