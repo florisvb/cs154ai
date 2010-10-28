@@ -6,7 +6,7 @@ def self_containedfunction(questionlist):
     SAVE_DATA = True
 
     try:
-        load('picklefile')
+        database = load('picklefile')
         print 'database loaded from picklefile!'
     except:
         print 'need to generate database'
@@ -17,7 +17,7 @@ def self_containedfunction(questionlist):
     
     mat = database.mat
     
-    # insert code here
+    # insert code here	
     
     
     
