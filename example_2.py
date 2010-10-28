@@ -13,11 +13,11 @@ FILENAME = 'milestone1/dataset.txt'
 FILENAME_PICKLE = 'database' 
 
 # this is to load the raw data... this takes a somewhat long time
-if 0:
+if 1:
     database = datastructure.load_raw(FILENAME)
     
 # this is to load a pickled database... this is much faster
-if 1:
+if 0:
     database = datastructure.load(FILENAME_PICKLE)
     
 
