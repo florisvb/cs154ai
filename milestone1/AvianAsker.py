@@ -170,7 +170,6 @@ class Database:
         for line in infile.readlines():
             line_number += 1
             percent_read = float(line_number) / 57600.
-            print 'reading line: ', line_number, ' = ', percent_read*100, '%'
             
             entry = map(int, line.split())
             #entry: img_number, attribute_number, true/false
@@ -184,6 +183,7 @@ class Database:
             self.bird_names.setdefault(species_name, species_number)
             if self.birds[species_number] is None:
                 self.birds[species_number] = Bird(species_name, num_attributes=self.num_attributes)
+                print 'reading line: ', line_number, ' = ', percent_read*100, '%', 'bird: ', species_name
                 
             # save all the data into an array of attributes:
             self.birds[species_number].attributes_binary[attribute_number] = attribute_value
