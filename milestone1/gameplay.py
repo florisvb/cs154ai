@@ -21,7 +21,7 @@ def myAvianAskerRandom(QAs):
 def check_all_birds():
     birdnum = 1
     results = []
-    numQs = []
+    numQs = [None]
     while birdnum < nspecies:
         
         QAs = playgame(birdnum)
