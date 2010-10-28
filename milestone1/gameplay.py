@@ -1,4 +1,7 @@
 import random
+import AvianAsker
+
+myAvianAsker = AvianAsker.myAvianAsker
 
 nspecies = 200
 nattributes = 288
@@ -6,14 +9,16 @@ nattributes = 288
 
 #Example of a bad asker
 #Replace this part by your own function
-def myAvianAsker(QAs):
-	#First five questions are on attributes 
-        if len(QAs) < 5:
-                Q=random.randint(0,nattributes-1)
-	#All others guess the species
-	else:
-                Q=random.randint(nattributes,nattributes+nspecies)
-	return Q
+def myAvianAskerRandom(QAs):
+    #First five questions are on attributes 
+    if len(QAs) < 5:
+        Q=random.randint(0,nattributes-1)
+    #All others guess the species
+    else:
+        Q=random.randint(nattributes,nattributes+nspecies)
+    return Q
+    
+
 
 #Open random bird
 infile = open("specie_names.txt","r")
@@ -48,25 +53,27 @@ for lines in infile.readlines():
 
 #Begin new game
 QAs = []
-while True:
-        Q = myAvianAsker(QAs)
-	if Q-nattributes+1 == rndbrd:
-                print("Is it "+" ".join(spec_dict[str(Q-nattributes+1)][1].split('_'))+"?")
-                print("You have guessed correctly, the bird is "+" ".join(spec_dict[str(rndbrd)][1].split('_'))+"\n")
-                break
-        elif Q >= nattributes + nspecies:
-                print("The question is out of range")
-                continue
-        elif Q >= nattributes and Q != rndbrd:
-                print("Is it "+" ".join(spec_dict[str(Q-nattributes+1)][1].split('_'))+"?")
-                print("Sorry, you are wrong!\n")
-                A = '0' #incorrect guess
-        else:                
-                print("It "+ Ques_dict[str(Q)] +"?")
-                A = id_dict[spec_dict[str(rndbrd)][0]][str(Q)];                       
-                if A == '1':
-                        print("Yes!\n")
-                else:
-                        print("No!\n")
+Q = None
+while Q is not -1:
+    Q = myAvianAsker(QAs)
+    if Q-nattributes+1 == rndbrd:
+        print("Is it "+" ".join(spec_dict[str(Q-nattributes+1)][1].split('_'))+"?")
+        print("You have guessed correctly, the bird is "+" ".join(spec_dict[str(rndbrd)][1].split('_'))+"\n")
+        break
+    elif Q >= nattributes + nspecies:
+        print("The question is out of range")
+        continue
+    elif Q >= nattributes and Q != rndbrd:
+        print("Is it "+" ".join(spec_dict[str(Q-nattributes+1)][1].split('_'))+"?")
+        print("Sorry, you are wrong!\n")
+        A = '0' #incorrect guess
+        break
+    else:                
+        print("It "+ Ques_dict[str(Q)] +"?")
+        A = id_dict[spec_dict[str(rndbrd)][0]][str(Q)];                       
+        if A == '1':
+            print("Yes!\n")
+        else:
+            print("No!\n")
 
-	QAs.append([Q, A])
+    QAs.append([Q, A])
