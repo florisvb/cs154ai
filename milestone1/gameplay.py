@@ -120,7 +120,6 @@ class GamePlay:
                     print("Is it "+" ".join(self.spec_dict[str(Q-nattributes+1)][1].split('_'))+"?")
                 print("Sorry, you are wrong!\n")
                 A = '0' #incorrect guess
-                break
             else:            
                 if printvals:    
                     print("It "+ self.Ques_dict[str(Q)] +"?")

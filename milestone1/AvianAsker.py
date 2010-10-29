@@ -1,5 +1,6 @@
 import numpy as np
 import cPickle as pickle
+import random
 
 nspecies = 200
 nattributes = 288
@@ -8,12 +9,17 @@ nattributes = 288
 #  myAvianAsker
 #########################################################################################
 
-def answerQuestion(attrnum, truth_value, matrix):
-    attrnum += 1
+def answerQuestion(Q, truth_value, matrix):
     
-    if attrnum > nattributes:
-        return matrix 
-    
+    if Q >= nattributes:
+        bird_guess = Q-nattributes+1
+        index = np.where(matrix==bird_guess)[0][0]
+        if int(truth_value) == 0:
+            matrix = np.delete(matrix, np.s_[index], axis=0)
+        return matrix
+    else:
+        attrnum = Q+1
+        
     num_species = matrix.shape[0]
     for i in range(1,num_species+1):
         index = num_species - i
@@ -52,13 +58,17 @@ def myAvianAsker(QAs, printvals=False, database=None):
         save(database, 'picklefile')
 
     # if we've found the bird, ask about its name
-    if (mat.shape[0] == 1):
+    if (mat.shape[0] <= 3):
         if printvals:
 	        print mat[0,0]
+	        
+        possible_birds = [i for i in mat[:,0]]
+        bird_guess = possible_birds[ random.randint(1,len(possible_birds))-1 ]
+        
         if cheat is False:
-            return mat[0,0] + nattributes -1 
+            return bird_guess + nattributes -1 
         elif cheat is True:
-            return mat[0,0] + nattributes -1 , database
+            return bird_guess + nattributes -1 , database
 
     # otherwise generate a question about one of the attributes
     min_value = 10000
