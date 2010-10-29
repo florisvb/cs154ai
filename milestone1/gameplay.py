@@ -109,4 +109,4 @@ def playgame(bird=None, printvals=False):
     
     
 if __name__=='__main__':
-    playgame()
+    playgame(printvals=True)
