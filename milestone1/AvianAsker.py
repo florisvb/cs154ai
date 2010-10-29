@@ -1,22 +1,38 @@
 import numpy as np
 import cPickle as pickle
 
+nspecies = 200
+nattributes = 288
+
 #########################################################################################
 #  myAvianAsker
 #########################################################################################
+
+def answerQuestion(attrnum, truth_value, matrix):
+    attrnum += 1
+    
+    if attrnum > nattributes:
+        return matrix 
+    
+    num_species = matrix.shape[0]
+    for i in range(1,num_species+1):
+        index = num_species - i
+        if (int(matrix[index,attrnum]) != int(truth_value)):
+            matrix = np.delete(matrix, np.s_[index], axis=0)
+    return matrix
+
+
 #Generate a question
-def myAvianAsker(QAs, printvals=False):
+def myAvianAsker(QAs, printvals=False, database=None):
     SAVE_DATA = True
 
-    try:
-        database = load('picklefile')
-        #print 'database loaded from picklefile!'
-    except:
-        print 'need to generate database'
-        database = load_raw('dataset.txt')
-        database.mat = generate_attribute_matrix(database, dtype='numpy', append_bird_ids=True, remove_empty_row=True)
-        save(database, 'picklefile')
-        
+    if database is None:
+        cheat = False
+        database = initialize()
+    else:
+        cheat = True
+        # database is given
+    
     # if it's a new bird.. start with a fresh matrix
     ## TODO:
     # This might be wrong? Need a 'is new bird' algorithm based on QAs
@@ -24,30 +40,25 @@ def myAvianAsker(QAs, printvals=False):
         database.mat = generate_attribute_matrix(database, dtype='numpy', append_bird_ids=True, remove_empty_row=True)
     mat = database.mat
     
-    #return mat
-    
-    #Delete the rows which do not agree with the answer
-    nattributes = mat.shape[1]
+    # delete all birds that fail the question
     if len(QAs) > 0:
-        question_id = QAs[-1][0] + 1
-        answer = QAs[-1][1]
-        if question_id <= nattributes - 1:
-            num_species = mat.shape[0]
-            for i in range(1,num_species+1):
-                index = num_species - i
-                if (int(mat[index,question_id]) != int(answer)):
-                    mat = np.delete(mat, np.s_[index], axis=0)
-
+        Q = QAs[-1][0]
+        A = QAs[-1][1]
+        mat = answerQuestion(Q, A, mat)
+                    
     #Save the trunkated matrix into a pickle: 
-    if SAVE_DATA is True:
-        database.mat = mat
+    database.mat = mat
+    if SAVE_DATA is True and cheat is False:
         save(database, 'picklefile')
 
     # if we've found the bird, ask about its name
     if (mat.shape[0] == 1):
         if printvals:
 	        print mat[0,0]
-        return mat[0,0] + nattributes -1 
+        if cheat is False:
+            return mat[0,0] + nattributes -1 
+        elif cheat is True:
+            return mat[0,0] + nattributes -1 , database
 
     # otherwise generate a question about one of the attributes
     min_value = 10000
@@ -57,10 +68,12 @@ def myAvianAsker(QAs, printvals=False):
         if (num < min_value):
             min_value = num
             min_index = i
-
-    return min_index -1
-
-
+            
+    if cheat is False:
+        return min_index-1
+    elif cheat is True:
+        return min_index-1, database
+        
 #########################################################################################
 #  Help Functions
 #########################################################################################
@@ -86,6 +99,16 @@ def save(database, filename):
     fd.close()
     return 1
     
+def initialize():
+    try:
+        database = load('picklefile')
+        #print 'database loaded from picklefile!'
+    except:
+        print 'need to generate database'
+        database = load_raw('dataset.txt')
+        database.mat = generate_attribute_matrix(database, dtype='numpy', append_bird_ids=True, remove_empty_row=True)
+        save(database, 'picklefile')
+    return database
 #########################################################################################
 
 def count_permissible_birds(database):
