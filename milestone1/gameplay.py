@@ -35,8 +35,7 @@ def check_all_birds():
     return mean_numQs, std_numQs, results
     
     
-def playgame(bird=None):
-
+def playgame(bird=None, printvals=False):
     infile = open("specie_names.txt","r")
     train = infile.readlines()
     spec_dict={}
@@ -48,7 +47,9 @@ def playgame(bird=None):
         rndbrd = random.randint(1,len(train))
     else:
         rndbrd = bird
-
+    
+    print 'playing game with bird id: ', rndbrd
+    
     #Open train data
     infile = open("dataset.txt","r")
     id_dict={}
@@ -77,24 +78,30 @@ def playgame(bird=None):
     while Q is not -1:
         Q = myAvianAsker(QAs)
         if Q-nattributes+1 == rndbrd:
-            print("Is it "+" ".join(spec_dict[str(Q-nattributes+1)][1].split('_'))+"?")
-            print("You have guessed correctly, the bird is "+" ".join(spec_dict[str(rndbrd)][1].split('_'))+"\n")
+            if printvals:
+                print("Is it "+" ".join(spec_dict[str(Q-nattributes+1)][1].split('_'))+"?")
+                print("You have guessed correctly, the bird is "+" ".join(spec_dict[str(rndbrd)][1].split('_'))+"\n")
             break
         elif Q >= nattributes + nspecies:
-            print("The question is out of range")
+            if printvals:
+                print("The question is out of range")
             continue
         elif Q >= nattributes and Q != rndbrd:
-            print("Is it "+" ".join(spec_dict[str(Q-nattributes+1)][1].split('_'))+"?")
-            print("Sorry, you are wrong!\n")
+            if printvals:
+                print("Is it "+" ".join(spec_dict[str(Q-nattributes+1)][1].split('_'))+"?")
+                print("Sorry, you are wrong!\n")
             A = '0' #incorrect guess
             break
-        else:                
-            print("It "+ Ques_dict[str(Q)] +"?")
+        else:            
+            if printvals:    
+                print("It "+ Ques_dict[str(Q)] +"?")
             A = id_dict[spec_dict[str(rndbrd)][0]][str(Q)];                       
             if A == '1':
-                print("Yes!\n")
+                if printvals:
+                    print("Yes!\n")
             else:
-                print("No!\n")
+                if printvals:
+                    print("No!\n")
 
         QAs.append([Q, A])
         

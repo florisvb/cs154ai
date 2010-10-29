@@ -5,7 +5,7 @@ import cPickle as pickle
 #  myAvianAsker
 #########################################################################################
 #Generate a question
-def myAvianAsker(QAs):
+def myAvianAsker(QAs, printvals=False):
     SAVE_DATA = True
 
     try:
@@ -45,7 +45,8 @@ def myAvianAsker(QAs):
 
     # if we've found the bird, ask about its name
     if (mat.shape[0] == 1):
-	print mat[0,0]
+        if printvals:
+	        print mat[0,0]
         return mat[0,0] + nattributes -1 
 
     # otherwise generate a question about one of the attributes
