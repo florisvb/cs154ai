@@ -243,6 +243,8 @@ class Database:
             
     def load_attribute_ids(self, filename):
         self.attribute_ids = [None for i in range(self.num_attributes)]
+        self.attribute_dict = {}
+        
         infile = open(filename,"r")
         for line in infile.readlines():
             line = line.rstrip()
@@ -252,11 +254,24 @@ class Database:
             attribute_name = partitioned_2[0]
             attribute_value = partitioned_2[2]
             attribute = (attribute_name, attribute_value)
+            
+            try:
+                attribute_number_arr = self.attribute_dict[attribute_name]
+            except:
+                attribute_number_arr = []
+            attribute_number_arr.append(attribute_number)
+            self.attribute_dict.setdefault(attribute_name, attribute_number_arr)
+            
             print attribute_number
             self.attribute_ids[attribute_number] = attribute
             
         infile.close()
     
+    def get_related_attributes(self, a):
+        attribute_name = self.attribute_ids[a][0]
+        related_attributes = self.attribute_dict[attribute_name]
+        return related_attributes
+        
 #########################################################################################
     
 
