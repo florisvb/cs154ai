@@ -396,7 +396,7 @@ class Database:
         # look up attribute id number and text pair
         self.load_attribute_ids('attributes.txt')
         
-        database.unkbird = np.ones(database.num_attributes)*0.5
+        self.unkbird = np.ones(self.num_attributes)*0.5
         
     def load_data(self, filename='dataset.txt'):
         print 'loading data... this may take some time'
@@ -469,6 +469,20 @@ class Database:
             self.attribute_ids[attribute_number] = attribute
             
         infile.close()
+        
+    def check_attribute_uniqueness(self):
+           
+        self.unique_attributes = [attr for attr in self.attribute_dict.keys()]
+           
+        for bird in self.birds:
+            if bird is not None:
+                for attribute_type, attribute_list in self.attribute_dict.items():
+                    attribute_list_vals = [bird.attributes_binary[a] for a in attribute_list]
+                    attribute_list_vals_sum = sum(attribute_list_vals)
+                    print attribute_list, attribute_list_vals_sum
+                    if attribute_list_vals_sum > 1:
+                        if attribute_type in self.unique_attributes:
+                            self.unique_attributes.remove(attribute_type)
     
     def get_related_attributes(self, a):
         attribute_name = self.attribute_ids[a][0]
