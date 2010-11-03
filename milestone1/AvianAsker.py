@@ -26,12 +26,9 @@ def answerQuestion(Q, truth_value, matrix):
         if (int(matrix[index,attrnum]) != int(truth_value)):
             matrix = np.delete(matrix, np.s_[index], axis=0)
     return matrix
-
-
-#Generate a question
-def myAvianAsker(QAs, printvals=False, database=None):
+    
+def first_halving_method(QAs, printvals=False, database=None):
     SAVE_DATA = True
-
     if database is None:
         cheat = False
         database = initialize()
@@ -85,6 +82,99 @@ def myAvianAsker(QAs, printvals=False, database=None):
         return min_index-1, database
         
 #########################################################################################
+
+def probability_halving_method(QAs, printvals=False, database=None):
+    SAVE_DATA = True
+    if database is None:
+        cheat = False
+        database = initialize()
+        database.unkbird = np.ones(database.num_attributes)*0.5
+        reset(database)
+    else:
+        cheat = True
+        # database is given
+    
+    # if it's a new bird.. start with a fresh matrix
+    ## TODO:
+    # This might be wrong? Need a 'is new bird' algorithm based on QAs
+    if len(QAs) == 0:
+        database.unkbird = np.ones(database.num_attributes)*0.5
+        reset(database)
+    unkbird = database.unkbird        
+    
+    # delete all birds that fail the question
+    if len(QAs) > 0:
+        Q = int(QAs[-1][0])
+        A = int(QAs[-1][1])
+        
+        if Q >= database.num_attributes:
+            bird_guess = Q-database.num_attributes+1
+            if A == 1:
+                print 'yay!'
+            if A == 0:
+                print 'wrong guess!!'
+                database.birds[bird_guess].permissible = False
+        
+        else:
+            unkbird[Q] = A
+        
+    # fill out related attributes: THIS DOES NOT WORK!!!!
+    #unkbird = fillout_related_attributes(database, unkbird)
+
+    # remove impossible birds:
+    remove_impossible_birds(database, unkbird, print_remaining=True)
+
+    # calculate probabilities for unknown attributes:
+    unkbird = calc_attribute_probabilities(database, unkbird)
+
+    # calculate bird probabilities:
+    calc_bird_probabilities(database, unkbird)
+
+    # save our new unkbird
+    database.unkbird = unkbird
+    #print unkbird
+
+    #Save the trunkated matrix into a pickle: 
+    if SAVE_DATA is True and cheat is False:
+        save(database, 'picklefile')
+        
+    ##################  now ask questions  #######################
+
+    # find the bird with the highest probability:
+    most_probable_bird, p = get_most_probable_bird(database)
+    nbirds = count_permissible_birds(database)
+    if p > 0.9 or nbirds<3:
+    #if nbirds < 3:
+        # ask the question!
+        print 'guessing bird: ', most_probable_bird, p
+        if cheat is False:
+            return most_probable_bird + nattributes -1
+        elif cheat is True:
+            return most_probable_bird + nattributes -1, database
+
+    diff = np.abs(unkbird - np.ones_like(unkbird)*0.5)
+    middle_attribute = np.argmin(diff)
+    
+    if cheat is False:
+        return middle_attribute
+    elif cheat is True:
+        return middle_attribute, database
+
+
+
+#Generate a question
+def myAvianAsker(QAs, printvals=False, database=None):
+ 
+    # to keep things 'simple': this is a list of all the potential functions we can try... set
+    if 0:
+        ans = first_halving_method(QAs, printvals=printvals, database=database)
+        return ans
+    if 1:
+        ans = probability_halving_method(QAs, printvals=printvals, database=database)
+        return ans
+    
+        
+#########################################################################################
 #  Help Functions
 #########################################################################################
 
@@ -129,6 +219,18 @@ def count_permissible_birds(database):
                 n += 1
     return n
     
+def get_most_probable_bird(database):
+    best_prob = 0
+    best_bird = None
+    for i in range(len(database.birds)):
+        bird = database.birds[i]
+        if bird is None or bird.permissible is False:
+            continue
+        if bird.probability > best_prob:
+            best_prob = bird.probability
+            best_bird = i
+    return best_bird, best_prob
+    
 def generate_attribute_matrix(database, dtype='numpy', append_bird_ids=True, remove_empty_row=True, permissible_only=False):
     if permissible_only is False:
         # create a mxn matrix where m is the bird species, and n is the attribute true/false array
@@ -158,7 +260,7 @@ def generate_attribute_matrix(database, dtype='numpy', append_bird_ids=True, rem
             if bird is None or bird.permissible is False:
                 continue
             if mat is None:
-                mat = bird.attributes_binary
+                mat = np.array(bird.attributes_binary)
             else:
                 mat = np.vstack((mat, bird.attributes_binary))
         
@@ -186,24 +288,29 @@ def calc_bird_probabilities(database, unkbird):
     
     
 # "remove impossible birds" : set permissible = False for impossible birds
-def remove_impossible_birds(database, unkbird):
+def remove_impossible_birds(database, unkbird, print_remaining=True, set_possible_true=False):
     for bird in database.birds:
         if bird is None:
             continue
+        if set_possible_true is True:
+            bird.permissible = True
         for attribute in range(len(unkbird)):
             attribute_val = unkbird[attribute]
             if attribute_val == 1:
                 err = bird.attributes_binary[attribute] - attribute_val
                 if err != 0:
                     bird.permissible = False
-                    print 'removed bird: ', bird
+                    #print 'removed bird: ', bird
                     break
             if attribute_val == 0:
                 err = bird.attributes_binary[attribute] - attribute_val
                 if err != 0:
                     bird.permissible = False
-                    print 'removed bird: ', bird
+                    #print 'removed bird: ', bird
                     break
+    if print_remaining is True:
+        n = count_permissible_birds(database)
+        print 'number remaining birds: ', n
     return database
         
 def print_errors(database):
@@ -228,7 +335,27 @@ def fillout_related_attributes(database, unkbird):
                 unkbird[attr] = 0
     
     return unkbird
-
+    
+def threshold(unknown_bird, thresh_hi=0.8, thresh_lo=0.2):
+    unkbird = np.array([i for i in unknown_bird])
+    for i in range(len(unkbird)):
+        if unkbird[i] < thresh_lo:
+            unkbird[i] = 0
+        if unkbird[i] > thresh_hi:
+            unkbird[i] = 1
+    return unkbird
+    
+def print_permissible_birds(database):
+    for i in range(len(database.birds)):
+        bird = database.birds[i]
+        if bird is not None:
+            if bird.permissible is True:
+                print i, bird.probability
+                
+def reset(database):
+    for bird in database.birds:
+        if bird is not None:
+            bird.permissible = True
 #########################################################################################
 
 class Bird:
@@ -270,6 +397,8 @@ class Database:
         
         # look up attribute id number and text pair
         self.load_attribute_ids('attributes.txt')
+        
+        self.unkbird = np.ones(self.num_attributes)*0.5
         
     def load_data(self, filename='dataset.txt'):
         print 'loading data... this may take some time'
