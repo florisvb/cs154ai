@@ -88,8 +88,6 @@ def probability_halving_method(QAs, printvals=False, database=None):
     if database is None:
         cheat = False
         database = initialize()
-        database.unkbird = np.ones(database.num_attributes)*0.5
-        reset(database)
     else:
         cheat = True
         # database is given
@@ -98,7 +96,6 @@ def probability_halving_method(QAs, printvals=False, database=None):
     ## TODO:
     # This might be wrong? Need a 'is new bird' algorithm based on QAs
     if len(QAs) == 0:
-        database.unkbird = np.ones(database.num_attributes)*0.5
         reset(database)
     unkbird = database.unkbird        
     
@@ -353,6 +350,7 @@ def print_permissible_birds(database):
                 print i, bird.probability
                 
 def reset(database):
+    database.unkbird = np.ones(database.num_attributes)*0.5
     for bird in database.birds:
         if bird is not None:
             bird.permissible = True
@@ -398,7 +396,7 @@ class Database:
         # look up attribute id number and text pair
         self.load_attribute_ids('attributes.txt')
         
-        self.unkbird = np.ones(self.num_attributes)*0.5
+        database.unkbird = np.ones(database.num_attributes)*0.5
         
     def load_data(self, filename='dataset.txt'):
         print 'loading data... this may take some time'

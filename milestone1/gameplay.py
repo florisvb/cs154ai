@@ -1,19 +1,11 @@
 import random
+import AvianAsker as AA
 
 nspecies = 200
 nattributes = 288
 
 
-#Example of a bad asker
-#Replace this part by your own function
-def myAvianAsker(QAs):
-	#First five questions are on attributes 
-        if len(QAs) < 5:
-                Q=random.randint(0,nattributes-1)
-	#All others guess the species
-	else:
-                Q=random.randint(nattributes,nattributes+nspecies)
-	return Q
+myAvianAsker = AA.myAvianAsker
 
 #Open random bird
 infile = open("specie_names.txt","r")
