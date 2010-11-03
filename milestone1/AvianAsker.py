@@ -123,35 +123,102 @@ def initialize():
 
 def count_permissible_birds(database):
     n = 0
-    for k,v in database.birds.items():
-        if database.birds[k].permissible is True:
-            n += 1
+    for bird in database.birds:
+        if bird is not None:
+            if bird.permissible is True:
+                n += 1
     return n
     
-def generate_attribute_matrix(database, dtype='numpy', append_bird_ids=True, remove_empty_row=True):
-    # create a mxn matrix where m is the bird species, and n is the attribute true/false array
-    num_attributes = database.num_attributes
-    num_species = database.num_species
-    mat = np.zeros([num_species, num_attributes], dtype=int)
-    for specie in range(num_species):
-        try: # try/except needed to deal with empty bird[0] case
-            mat[specie, :] = database.birds[specie].attributes_binary
-        except:
-            pass
-            
-    if append_bird_ids:
-        bird_ids_arr = [i for i in range(num_species)]
-        bird_ids = np.array(bird_ids_arr).reshape(num_species, 1)
-        mat = np.hstack( (bird_ids, mat) )
-    
-    if remove_empty_row:
-        # remove first row: it does not correspond to a real bird
-        mat = np.delete(mat, np.s_[0], axis=0)
+def generate_attribute_matrix(database, dtype='numpy', append_bird_ids=True, remove_empty_row=True, permissible_only=False):
+    if permissible_only is False:
+        # create a mxn matrix where m is the bird species, and n is the attribute true/false array
+        num_attributes = database.num_attributes
+        num_species = database.num_species
+        mat = np.zeros([num_species, num_attributes], dtype=int)
+        for specie in range(num_species):
+            try: # try/except needed to deal with empty bird[0] case
+                mat[specie, :] = database.birds[specie].attributes_binary
+            except:
+                pass
                 
+        if append_bird_ids:
+            bird_ids_arr = [i for i in range(num_species)]
+            bird_ids = np.array(bird_ids_arr).reshape(num_species, 1)
+            mat = np.hstack( (bird_ids, mat) )
+
+        if remove_empty_row:
+            # remove first row: it does not correspond to a real bird
+            mat = np.delete(mat, np.s_[0], axis=0)
+            
+    # remove non-permissible birds:
+    if permissible_only is True:
+        
+        mat = None
+        for bird in database.birds:
+            if bird is None or bird.permissible is False:
+                continue
+            if mat is None:
+                mat = bird.attributes_binary
+            else:
+                mat = np.vstack((mat, bird.attributes_binary))
+        
     if dtype == 'numpy':
         return mat
     elif dtype == 'list':
         return mat.tolist()
+        
+# this is the best model we have for the unknown bird
+def get_attribute_probabilities(database, unkbird):
+    # get matrix of permissible bird attributes:
+    mat = generate_attribute_matrix(database, dtype='numpy', append_bird_ids=False, remove_empty_row=True, permissible_only=True)
+    probability_array = np.sum(mat, axis=0) / float(mat.shape[0])
+    return probability_array
+    
+def calc_bird_probabilities(database, unkbird):
+    for i in range(len(database.birds)):
+        if i == 0:
+            continue
+        database.birds[i].err = sum( np.abs(database.birds[i].attributes_binary - unkbird))
+    return database
+    
+# "remove impossible birds" : set permissible = False for impossible birds
+def remove_impossible_birds(database, unkbird):
+    for bird in database.birds:
+        if bird is None:
+            continue
+        for attribute in range(len(unkbird)):
+            attribute_val = unkbird[attribute]
+            if attribute_val == 1:
+                err = bird.attributes_binary[attribute] - attribute_val
+                if err != 0:
+                    bird.permissible = False
+                    print 'removed bird: ', bird
+                    break
+            if attribute_val == 0:
+                err = bird.attributes_binary[attribute] - attribute_val
+                if err != 0:
+                    bird.permissible = False
+                    print 'removed bird: ', bird
+                    break
+    return database
+        
+def print_errors(database):
+    for bird in database.birds:
+        if bird is not None:
+            print bird.err
+
+# fillout all related attributes
+def fillout_related_attributes(database, unkbird):
+    for attribute in range(len(unkbird)):
+        attribute_val = unkbird[attribute]
+        if attribute_val == 1:
+            attr_list = database.get_related_attributes(attribute)
+            for attr in attr_list:
+                if attr == attribute:
+                    continue
+                unkbird[attr] = 0
+    
+        
 
 #########################################################################################
 
