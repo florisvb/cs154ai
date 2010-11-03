@@ -143,7 +143,7 @@ def probability_halving_method(QAs, printvals=False, database=None):
     # find the bird with the highest probability:
     most_probable_bird, p = get_most_probable_bird(database)
     nbirds = count_permissible_birds(database)
-    if p > 0.9 or nbirds<3:
+    if nbirds<3:
     #if nbirds < 3:
         # ask the question!
         print 'guessing bird: ', most_probable_bird, p
