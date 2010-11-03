@@ -168,7 +168,7 @@ def generate_attribute_matrix(database, dtype='numpy', append_bird_ids=True, rem
         return mat.tolist()
         
 # this is the best model we have for the unknown bird
-def get_attribute_probabilities(database, unkbird):
+def calc_attribute_probabilities(database, unkbird):
     # get matrix of permissible bird attributes:
     mat = generate_attribute_matrix(database, dtype='numpy', append_bird_ids=False, remove_empty_row=True, permissible_only=True)
     probability_array = np.sum(mat, axis=0) / float(mat.shape[0])
@@ -179,7 +179,11 @@ def calc_bird_probabilities(database, unkbird):
         if i == 0:
             continue
         database.birds[i].err = sum( np.abs(database.birds[i].attributes_binary - unkbird))
+        database.birds[i].probability = (database.num_attributes - database.birds[i].err) / database.num_attributes
     return database
+    
+    
+    
     
 # "remove impossible birds" : set permissible = False for impossible birds
 def remove_impossible_birds(database, unkbird):
@@ -206,6 +210,11 @@ def print_errors(database):
     for bird in database.birds:
         if bird is not None:
             print bird.err
+            
+def print_probabilities(database):
+    for bird in database.birds:
+        if bird is not None:
+            print bird.probability
 
 # fillout all related attributes
 def fillout_related_attributes(database, unkbird):
@@ -218,7 +227,7 @@ def fillout_related_attributes(database, unkbird):
                     continue
                 unkbird[attr] = 0
     
-        
+    return unkbird
 
 #########################################################################################
 
