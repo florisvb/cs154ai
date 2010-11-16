@@ -2,6 +2,15 @@ import cPickle as pickle
 import numpy as np
 import random
 
+# TODO:
+
+# these are the variables that need tuning:
+'''
+definitely, probably, guessing
+weight_diff, weight_uncertainty
+probability and number of bird thresholds in finding the set of likely birds
+'''
+
 nspecies = 200
 nattributes = 288
 
@@ -25,8 +34,6 @@ class AvianAsker:
             
     def probability_halving_method(self, img_id, QAs):
         # if it's a new bird.. start with a fresh matrix
-        ## TODO:
-        # This might be wrong? Need a 'is new bird' algorithm based on QAs
         if len(QAs) == 0:
             self.unkbird = np.zeros(nattributes, dtype=float)
             self.unkbirdunc = np.zeros(nattributes, dtype=float)
@@ -116,8 +123,8 @@ class AvianAsker:
         # perhaps work in choosing the attributes that have higher certainty for the likely birds?
         avg_uncertainty = calc_avg_uncertainty_for_likely_birds(self.database)
         
-        weight_diff = 1
-        weight_uncertainty = 1
+        weight_diff = 1 # diff of 0 is desireable
+        weight_uncertainty = 1 # uncertainty of 0 is desireable
         
         information = weight_diff*diff + weight_uncertainty*avg_uncertainty
         
@@ -224,15 +231,19 @@ def calc_likelybird(database):
     
 def calc_avg_uncertainty_for_likely_birds(database):
     
-    sum_uncertainty = np.zeros(nattributes, dtype=float)
+    sum_certainty = np.zeros(nattributes, dtype=float)
     n = 0
     for i, bird in enumerate(database.birds):
         if bird is not None:
             if bird.likely is True:
                 n += 1
-                sum_uncertainty += bird.attributes_certainty
+                sum_certainty += bird.attributes_certainty
     
-    avg_uncertainty = sum_uncertainty / n
+    avg_certainty = sum_certainty / n
+    
+    # high avg_certainty == good, convert to uncertainty, where low is good:
+    avg_uncertainty = np.abs(1-avg_certainty)
+    
     return avg_uncertainty  
         
 # this is the best model we have for the unknown bird
@@ -412,7 +423,7 @@ class Database:
             img_number = partitioned[0]
             text = partitioned[2]
             bird_id = int(text[0:3])
-            img_path = text[4:-1]
+            img_path = text
             self.img_ids.setdefault(img_number, [bird_id, img_path])
             name = img_path.split('/')
             self.bird_ids.setdefault(str(bird_id), name[0])
@@ -429,6 +440,19 @@ class Database:
             attribute_value = partitioned_2[2]
             attribute = (attribute_name, attribute_value)
             self.attribute_ids.setdefault(attribute_number, attribute)
+            
+    def calc_image_histograms(self):
+        for bird in self.birds:
+            if bird is not None:
+                img_ids = bird.image_ids
+                for img_id in img_ids:
+                    img_file = self.img_ids[img_id][1]
+                    
+                    # img_file is the path/image name of the image file
+                    # do image processing here
+                    print img_file
+                    
+                    bird.histogram = 'your histogram'
             
     
             
