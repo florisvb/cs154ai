@@ -51,38 +51,39 @@ for i in range(n):
         while True:
                 Q = myAvianAsker(image[image_id], QAs)
                 if Q-nattributes+1 == rndbrd:
-                        print("Is it "+spec_dict[Q-nattributes+1]+"?")
-                        print("You have guessed correctly, the bird is "+spec_dict[rndbrd]+"\n")
+                        #print("Is it "+spec_dict[Q-nattributes+1]+"?")
+                        #print("You have guessed correctly, the bird is "+spec_dict[rndbrd]+"\n")
                         print("Your score is "+str(len(QAs)+1))
                         Sum = Sum + len(QAs) + 1
                         break
                 elif Q >= nattributes + nspecies:
-                        print("The question is out of range")
+                        #print("The question is out of range")
                         continue
                 elif Q >= nattributes and Q != rndbrd:
-                        print("Is it "+spec_dict[Q-nattributes+1]+"?")
-                        print("Sorry, you are wrong!\n")
+                        #print("Is it "+spec_dict[Q-nattributes+1]+"?")
+                        #print("Sorry, you are wrong!\n")
                         A = '0' #incorrect guess
                 else:                
-                        print("It "+ Ques_dict[str(Q)] +"?")
+                        #print("It "+ Ques_dict[str(Q)] +"?")
                         if Q in data[image_id].keys():
                                 A = data[image_id][Q]
                         else:
                                 A = '2'
-                        if A == [1,0]:
-                                print("Yes! Probably.\n")
-                        elif A == [1,1]:
-                                print("Yes! Definitely.\n")
-                        elif A == [1,2]:
-                                print("Yes! I guess.\n")
-                        elif A == [0,0]:
-                                print("No! Probably.\n")
-                        elif A == [0,1]:
-                                print("No! Definitely.\n")
-                        elif A == [0,2]:
-                                print("No! I guess.\n")
-                        else:
-                                print("I don't know!\n")
+                        if 0:
+                            if A == [1,0]:
+                                    print("Yes! Probably.\n")
+                            elif A == [1,1]:
+                                    print("Yes! Definitely.\n")
+                            elif A == [1,2]:
+                                    print("Yes! I guess.\n")
+                            elif A == [0,0]:
+                                    print("No! Probably.\n")
+                            elif A == [0,1]:
+                                    print("No! Definitely.\n")
+                            elif A == [0,2]:
+                                    print("No! I guess.\n")
+                            else:
+                                    print("I don't know!\n")
 
                 QAs.append([Q, A])
                 f = open("QA.txt", "w")

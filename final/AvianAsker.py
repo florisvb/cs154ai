@@ -49,10 +49,10 @@ class AvianAsker:
             # guessed bird
             if Q >= nattributes:
                 bird_guess = Q-nattributes+1
-                if V == 1:
-                    print 'yay!'
+                #if V == 1:
+                    #print 'yay!'
                 if V == 0:
-                    print 'wrong guess!!'
+                    #print 'wrong guess!!'
                     self.database.birds[bird_guess].permissible = False
 
             # guessed attribute            
@@ -103,18 +103,46 @@ class AvianAsker:
             print 'guessing bird: ', most_probable_bird, p
             return most_probable_bird + nattributes -1
         '''
+        
+        ## TODO:
+        # choosing which birds to call 'likely' and then when to start guessing birds is the problem now
+        # perhaps we can cluster the birds based on probability, and then call the cluster with the highest probability the likely birds
+        # if that cluster is smaller than 5 or something, then start guessing birds
+        
+        
         # calculate probabilities for unknown attributes:
-        n = 0
-        p = 1.0
-        while n < 6:
-            p -= 0.02
-            calc_likely_birds(self.database, p)
-            n = count_likely_birds(self.database)
+        ntopbirds = max(10, 200/(2**len(self.Qasked)))
+        # get order of bird probabilities:
+        probabilities = np.zeros(len(self.database.birds), dtype=float)
+        for i, bird in enumerate(self.database.birds):
+            if bird is not None:
+                probabilities[i] = bird.probability
+        bird_order = np.argsort(1-probabilities)
+        
+        # set all likelyhoods to False to start
+        for bird in self.database.birds:
+            if bird is not None:
+                bird.likely = False
+        
+        # set likelyhood to True for the top birds:
+        for i in range(ntopbirds):
+            self.database.birds[bird_order[i]].likely = True
+        n = count_likely_birds(self.database)
+        most_probable_bird, p = get_most_probable_bird(self.database)
+        
+        if 0:
+            while n < ntopbirds:
+                calc_likely_birds(self.database, p)
+                n = count_likely_birds(self.database)
+                p -= 0.001
             
-        print 'n likely birds: ', n, p
-        if n > 0 and n < 10:
-            most_probable_bird, p = get_most_probable_bird(self.database)
-            print 'guessing bird: ', most_probable_bird, p
+        # find the standard deviation of the probabilities of the most likely birds (to get an idea of spread):
+        std = calc_std_likely_birds(self.database)
+        print std, std/n, n, p
+            
+        #print 'n likely birds: ', n, p
+        if len(self.Qasked) > 9:
+            #print 'guessing bird: ', most_probable_bird, p
             return most_probable_bird + nattributes -1
             
         likelybird = calc_likelybird(self.database)
@@ -129,18 +157,18 @@ class AvianAsker:
         information = weight_diff*diff + weight_uncertainty*avg_uncertainty
         
         best_qs = np.argsort(information)
-        print self.Qasked
+        #print self.Qasked
         i = 0
         for i in range(len(best_qs)):
             if best_qs[i] in self.Qasked:
                 continue
             else:
-                print best_qs[i]
+                #print best_qs[i]
                 return best_qs[i]
                 
         # last resort: start guessing birds!
         most_probable_bird, p = get_most_probable_bird(self.database)
-        print 'guessing bird: ', most_probable_bird, p
+        #print 'guessing bird: ', most_probable_bird, p
         return most_probable_bird + nattributes -1   
                 
 
@@ -207,6 +235,19 @@ def get_most_probable_bird(database):
             best_prob = bird.probability
             best_bird = i
     return best_bird, best_prob
+    
+def calc_std_likely_birds(database):
+    probabilities = []
+    for bird in database.birds:
+        if bird is None:
+            continue
+        if bird.likely is True:
+            probabilities.append(bird.probability)
+            
+    probabilities = np.array(probabilities)
+    std = np.std(probabilities)
+    # normalize by number of birds?
+    return std
     
 def calc_likelybird(database):
     mat = None
