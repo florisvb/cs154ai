@@ -110,8 +110,8 @@ class AvianAsker:
         # if that cluster is smaller than 5 or something, then start guessing birds
         
         
-        # calculate probabilities for unknown attributes:
-        ntopbirds = max(10, 200/(2**len(self.Qasked)))
+        
+        
         # get order of bird probabilities:
         probabilities = np.zeros(len(self.database.birds), dtype=float)
         for i, bird in enumerate(self.database.birds):
@@ -124,26 +124,23 @@ class AvianAsker:
             if bird is not None:
                 bird.likely = False
         
+        
+        most_probable_bird, p = get_most_probable_bird(self.database)
+        # calculate probabilities for unknown attributes:
+        ntopbirds = count_birds_with_probability(self.database, 0.6)
+        if ntopbirds < 1:
+            ntopbirds = 200
+        
         # set likelyhood to True for the top birds:
         for i in range(ntopbirds):
-            self.database.birds[bird_order[i]].likely = True
+            if bird_order[i] != 0:
+                self.database.birds[bird_order[i]].likely = True
         n = count_likely_birds(self.database)
-        most_probable_bird, p = get_most_probable_bird(self.database)
         
-        if 0:
-            while n < ntopbirds:
-                calc_likely_birds(self.database, p)
-                n = count_likely_birds(self.database)
-                p -= 0.001
+        
+        
             
-        # find the standard deviation of the probabilities of the most likely birds (to get an idea of spread):
-        std = calc_std_likely_birds(self.database)
-        print std, std/n, n, p
-            
-        #print 'n likely birds: ', n, p
-        if len(self.Qasked) > 9:
-            #print 'guessing bird: ', most_probable_bird, p
-            return most_probable_bird + nattributes -1
+        
             
         likelybird = calc_likelybird(self.database)
         diff = np.abs(likelybird - np.zeros_like(likelybird))   
@@ -152,9 +149,11 @@ class AvianAsker:
         avg_uncertainty = calc_avg_uncertainty_for_likely_birds(self.database)
         
         weight_diff = 1 # diff of 0 is desireable
-        weight_uncertainty = 1 # uncertainty of 0 is desireable
+        weight_uncertainty = 0 # uncertainty of 0 is desireable
         
         information = weight_diff*diff + weight_uncertainty*avg_uncertainty
+        
+        
         
         best_qs = np.argsort(information)
         #print self.Qasked
@@ -163,8 +162,13 @@ class AvianAsker:
             if best_qs[i] in self.Qasked:
                 continue
             else:
-                #print best_qs[i]
-                return best_qs[i]
+            
+                if information[best_qs[i]] > 0.5 and len(self.Qasked) > 5:
+                    print 'guessing bird: ', n, p, information[best_qs[i]]
+                    return most_probable_bird + nattributes -1
+                else:
+                    print n, p, information[best_qs[i]]
+                    return best_qs[i]
                 
         # last resort: start guessing birds!
         most_probable_bird, p = get_most_probable_bird(self.database)
@@ -221,6 +225,14 @@ def count_likely_birds(database):
     for bird in database.birds:
         if bird is not None:
             if bird.likely is True:
+                n+=1
+    return n
+    
+def count_birds_with_probability(database, p):
+    n = 0.
+    for bird in database.birds:
+        if bird is not None:
+            if bird.probability > p:
                 n+=1
     return n
     
@@ -301,12 +313,12 @@ def calc_bird_probabilities(database, unkbird, unkbirdunc):
             continue
             
         binary_err = np.abs(bird.attributes_binary - unkbird)
-        uncertainties = bird.attributes_certainty*unkbirdunc
+        uncertainties = ((bird.attributes_certainty + unkbirdunc) / 2.)*(unkbirdunc>0)
         
         database.birds[i].err = sum( binary_err*uncertainties ) / 2.
         
         if unkbirdunc.sum() > 0:
-            database.birds[i].probability = (unkbirdunc.sum() - database.birds[i].err) / unkbirdunc.sum()
+            database.birds[i].probability = (uncertainties.sum() - database.birds[i].err) / uncertainties.sum()
         else:
             database.birds[i].probability = 0.5
     return database
